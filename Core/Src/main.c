@@ -43,6 +43,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+__attribute__((section(".noinit"))) uint32_t dfu_boot_flag;
+#define DFU_MAGIC_KEY 0x12345678
+volatile int button_held = 0;
+volatile uint32_t press_time = 0; 
 
 /* USER CODE END PV */
 
@@ -66,6 +70,15 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+  
+	if (dfu_boot_flag == DFU_MAGIC_KEY) {
+    dfu_boot_flag = 0;
+    void (*SysMemBootJump)(void) = (void (*)(void))(*((uint32_t *)0x1FFF0004));
+    __set_MSP(*((uint32_t *)0x1FFF0000));
+    SysMemBootJump();
+    while (1);
+}
+
 
   /* USER CODE END 1 */
 
@@ -99,6 +112,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+ if (button_held && (HAL_GetTick() - press_time >= 1000U)) {
+    // Blink three times before entering DFU.
+    for (int i = 0; i < 6; i++) {
+        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+        HAL_Delay(100);
+    }
+
+    dfu_boot_flag = DFU_MAGIC_KEY;
+    HAL_NVIC_SystemReset();
+    }
   }
   /* USER CODE END 3 */
 }
@@ -184,15 +207,26 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN) {
-  if (GPIO_PIN == Button_Pin) {
-    GPIO_PinState voltage_state = HAL_GPIO_ReadPin(Button_GPIO_Port, Button_Pin);
-    if (voltage_state == GPIO_PIN_SET) {
-      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-    } else if (voltage_state == GPIO_PIN_RESET) {
-      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN)
+{
+    if (GPIO_PIN == Button_Pin) {
+        GPIO_PinState state =
+            HAL_GPIO_ReadPin(Button_GPIO_Port, Button_Pin);
+
+        if (state == GPIO_PIN_RESET) {
+            // Button pressed: LED on, start timing.
+            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+            if (!button_held) {
+                press_time = HAL_GetTick();
+                button_held = 1;
+            }
+        } else {
+            // Button released: LED off, cancel timing.
+            HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+            button_held = 0;
+        }
     }
-  }
 }
 /* USER CODE END 4 */
 

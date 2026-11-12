@@ -46,10 +46,14 @@ The Windows DFU driver was subsequently installed, USB1 was detected successfull
 CubeMX is installed at `C:/Users/sunil/AppData/Local/Programs/STM32CubeMX/STM32CubeMX.exe`.
 When regenerating, CubeMX may ask to download STM32Cube FW_F4 V1.28.3; the repository already includes the drivers needed to build.
 
-## Guide 1 features still to add
+## Guide 1 hold-to-DFU
 
-The one-second KEY hold to enter DFU in software is not implemented upstream or here.
-Use BOOT0 + NRST for now. The basic button/LED program provides a small first hardware test.
+Hold KEY for one second: the LED blinks three times, then the board enters DFU.
+KEY will stop controlling the LED while in DFU; this is expected.
+Run List DFU devices to confirm USB1, then flash again without BOOT0.
+Press NRST with BOOT0 released to return to the application without uploading.
+Sunil confirmed successful uploading and USB1 detection after the hold gesture.
+The persistent flag requires the .noinit NOLOAD section in STM32F411xx_FLASH.ld.
 
 ## Guide 2 is not in Kevin's current code
 

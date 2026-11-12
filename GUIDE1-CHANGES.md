@@ -1,16 +1,18 @@
 # Guide 1 fixes for Kevin
 
 These changes extend commit 88cf2bb (Ready to upload first test).
-Guide 2 and the one-second hold-to-DFU feature are not implemented.
+Guide 1 now includes the one-second hold-to-DFU feature. Guide 2 is not implemented.
 
 ## Copy only the firmware fixes
 
-Copy these two files from this branch into the matching paths in your project:
+Copy these three files from this branch into the matching paths in your project:
 
 - Core/Src/main.c
 - Core/Src/stm32f4xx_it.c
+- STM32F411xx_FLASH.ld
 
-Or cherry-pick the commit titled "Fix Guide 1 button GPIO setup and interrupt handling".
+The firmware commits are "Fix Guide 1 button GPIO setup and interrupt handling"
+and "Complete Guide 1 hold-to-DFU with persistent flag linker section".
 The separate Windows tooling commit is optional; keep your existing Mac tasks if needed.
 
 ### What changed
@@ -35,4 +37,8 @@ Keep the button callback in its USER CODE section.
 The Debug firmware builds successfully with ST Arm Clang 21.1.1+st.7.
 Sunil reported a successful DFU upload after installing the Windows USB driver.
 Confirm on your board that KEY held means LED on, and released means LED off.
-Use BOOT0 + NRST to enter DFU; the software button-hold shortcut is still absent.
+Sunil also confirmed that holding KEY triggers the blinks and the board appears
+as USB1 in DFU mode. Short presses retain the original LED behavior.
+The linker script marks .noinit NOLOAD so the flag survives the application startup
+and is not sent as RAM download data during DFU flashing.
+Press NRST with BOOT0 released to return from DFU to the application.
