@@ -2,20 +2,54 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Flash via DFU (CubeProgrammer)",
-            "type": "shell",
-            "command": "cube", 
+            "label": "Build Rat",
+            "type": "process",
+            "command": "powershell.exe",
             "args": [
-                "programmer",
-                "-c",
-                "port=USB1",
-                "-w",
-                "${command:cmake.launchTargetDirectory}/${command:cmake.launchTargetFilename}",
-                "-v",
-                "-g"
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/rat.ps1",
+                "-Action",
+                "Build"
             ],
-            "group": "build",
-            "dependsOn": "CMake: build", 
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Flash via DFU (CubeProgrammer)",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/rat.ps1",
+                "-Action",
+                "Flash"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "List DFU devices",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/rat.ps1",
+                "-Action",
+                "List"
+            ],
             "problemMatcher": []
         }
     ]
