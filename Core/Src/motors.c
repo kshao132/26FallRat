@@ -9,6 +9,11 @@
  */
 float limitPWM(float pwm) {
 
+    
+if (pwm < -PWM_MAX) return -PWM_MAX; 
+if (pwm > PWM_MAX) return PWM_MAX; 
+return pwm; 
+
 }
 
 /*
@@ -25,12 +30,26 @@ float limitPWM(float pwm) {
  */
 void setMotorLPWM(float pwm) {
 
+pwm = limitPWM(pwm); 
+
+if (pwm < 0.0f) {
+TIM4->CCR3 = 0; // disable other first!
+TIM4->CCR4 = (uint32_t) (-pwm * MAX_TIMER_COUNTS); //use -pwm since we're setting backward
+}
+
+else
+{
+TIM4->CCR4 = 0; 
+TIM4->CCR3 = (uint32_t) (pwm * MAX_TIMER_COUNTS);
+}
+
+
 }
 
 /*
  * This function controls the right motor speed and direction. We do this by setting the timer pulse value for the appropriate channel.
  * All our H-bridge inputs use timer 4. TIM4->CCRX = (uint32_t) (limitPWM(pwm) * MAX_TIMER_COUNTS) sets the pulse value for channel x.
- * For the right motor, setting channel 1 makes the wheel spin forward and setting channel 2 makes the wheel spin backwards.
+ * For the right motor, setting channel 2 makes the wheel spin forward and setting channel 1 makes the wheel spin backwards.
  *
  * The parameter pwm is a value between 0 and 1, representing the percentage of maximum speed to turn the motor. e.g. 0.5 is half speed.
  *
@@ -41,11 +60,26 @@ void setMotorLPWM(float pwm) {
  */
 void setMotorRPWM(float pwm) {
 
+    
+pwm = limitPWM(pwm); 
+
+if (pwm < 0.0f) {
+TIM4->CCR2 = 0; // disable forward first!
+TIM4->CCR1 = (uint32_t) (-pwm * MAX_TIMER_COUNTS); //use -pwm since we're setting backward
+}
+
+else
+{
+TIM4->CCR1 = 0; 
+TIM4->CCR2 = (uint32_t) (pwm * MAX_TIMER_COUNTS);
+}
+
 }
 
 /*
  * Using the two previous setMotorPWM functions, implement resetMotors to set the PWM for both wheels to zero, effectively stopping them.
  */
 void resetMotors() {
-
+setMotorRPWM(0.0f);
+setMotorLPWM(0.0f); 
 }

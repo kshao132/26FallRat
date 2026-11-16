@@ -10,12 +10,13 @@
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
+  * in the root directory of this software component
+
+directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-#include "encoders.h"
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -23,7 +24,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "encoders.h"
+#include <stdio.h>
+#include "usbd_cdc_if.h"
+#include "motors.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +51,9 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
+
+int16_t left_counts = 0;
+int16_t right_counts = 0;
 __attribute__((section(".noinit"))) uint32_t dfu_boot_flag;
 #define DFU_MAGIC_KEY 0x12345678
 volatile int button_held = 0;
@@ -115,6 +122,17 @@ int main(void)
 HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
 HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
 resetEncoders();
+HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
+HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+resetMotors();
+/*motor flashing 
+setMotorLPWM(0.3f);
+setMotorRPWM(-0.5f);
+HAL_Delay(2000);
+resetMotors();
+*/
 
   /* USER CODE END 2 */
 
@@ -125,6 +143,8 @@ resetEncoders();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+  left_counts = getLeftEncoderCounts();
+  right_counts = getRightEncoderCounts();
  if (button_held && (HAL_GetTick() - press_time >= 1000U)) {
     // Blink three times before entering DFU.
     for (int i = 0; i < 6; i++) {
@@ -135,7 +155,16 @@ resetEncoders();
     dfu_boot_flag = DFU_MAGIC_KEY;
     HAL_NVIC_SystemReset();
     }
+  static uint32_t last_tx = 0;
+  char buf[512];
+  if (HAL_GetTick() - last_tx >= 50) {
+    last_tx = HAL_GetTick();
+    int n = snprintf(buf, sizeof(buf), ">left:%d\n>right:%d\n",
+                     left_counts, right_counts);
+    CDC_Transmit_FS((uint8_t *) buf, (uint16_t) n);
   }
+  }
+
   /* USER CODE END 3 */
 }
 

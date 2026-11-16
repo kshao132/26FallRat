@@ -72,8 +72,10 @@ void Error_Handler(void);
 #define R_Encoder_1_GPIO_Port GPIOB
 #define R_Encoder_2_Pin GPIO_PIN_5
 #define R_Encoder_2_GPIO_Port GPIOB
-#define RightMotorBwd_Pin GPIO_PIN_7
+#define RightMotorBwd_Pin GPIO_PIN_6
 #define RightMotorBwd_GPIO_Port GPIOB
+#define RightMotorFwd_Pin GPIO_PIN_7
+#define RightMotorFwd_GPIO_Port GPIOB
 #define LeftMotorFwd_Pin GPIO_PIN_8
 #define LeftMotorFwd_GPIO_Port GPIOB
 #define LeftMotorBwd_Pin GPIO_PIN_9
