@@ -128,11 +128,9 @@ HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
 HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 resetMotors();
 /*motor flashing 
-setMotorLPWM(0.3f);
-setMotorRPWM(-0.5f);
-HAL_Delay(2000);
-resetMotors();
 */
+uint32_t demo_start = HAL_GetTick();
+int demo_state = 0;
 
   /* USER CODE END 2 */
 
@@ -143,6 +141,18 @@ resetMotors();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+uint32_t elapsed = HAL_GetTick() - demo_start; //Gets current tick, subtracts from start tick ie giving time elapsed since flash 
+
+if (demo_state == 0 && elapsed >= 5000U){ //Counts from start time to 5 seconds elapsed 
+setMotorLPWM(0.3f);   // Left forward at 30% PWM
+setMotorRPWM(-0.5f);  // Right backward at 50% PWM
+demo_state = 1;
+}
+
+if (demo_state == 1 && elapsed >= 9000U  ) { // Stops motors after running for 4 seconds 
+    resetMotors();
+    demo_state = 2;
+}
   left_counts = getLeftEncoderCounts();
   right_counts = getRightEncoderCounts();
  if (button_held && (HAL_GetTick() - press_time >= 1000U)) {
