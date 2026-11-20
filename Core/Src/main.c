@@ -141,14 +141,15 @@ int demo_state = 0;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-uint32_t elapsed = HAL_GetTick() - demo_start;
+uint32_t elapsed = HAL_GetTick() - demo_start; //Gets current tick, subtracts from start tick ie giving time elapsed since flash 
 
-if (demo_state == 0 && elapsed >= 7000U) {
-setMotorLPWM(0.5f); 
-    demo_state = 1;
+if (demo_state == 0 && elapsed >= 5000U){ //Counts from start time to 5 seconds elapsed 
+setMotorLPWM(0.3f);   // Left forward at 30% PWM
+setMotorRPWM(-0.5f);  // Right backward at 50% PWM
+demo_state = 1;
 }
 
-if (demo_state == 1 && elapsed >= 11000U) {
+if (demo_state == 1 && elapsed >= 9000U  ) { // Stops motors after running for 4 seconds 
     resetMotors();
     demo_state = 2;
 }
